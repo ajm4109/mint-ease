@@ -1,0 +1,44 @@
+[
+  {
+    "id": "001",
+    "name": "Asus Zephyrus Duo 16",
+    "msrp": "3499.00",
+    "category": {
+      "highlevel": "Electronics",
+      "lowlevel": "Laptop"
+    },
+    "forType": "Gaming",
+    "features": {
+      "pros": ["Duo Screen", "Runs cooler then previous versions"],
+      "cons": ["price"]
+    }
+  },
+  {
+    "id": "002",
+    "name": "Asus Zenbook Duo 16",
+    "msrp": "3499.00",
+    "category": {
+      "highlevel": "Electronics",
+      "lowlevel": "laptop"
+    },
+    "forType": "creative",
+    "features": {
+      "pros": ["Duo Screen"],
+      "cons": ["Runs Hot", "Price"]
+    }
+  },
+  {
+    "id": "003",
+    "name": "Samsung S22",
+    "msrp": "1649.00",
+    "category": {
+      "highlevel": "Electronics",
+      "lowlevel": "Smart phone"
+    },
+    "forType": "creative",
+    "features": {
+      "pros": ["Duo Screen"],
+      "cons": ["Runs Hot", "Price"]
+    }
+  }
+]

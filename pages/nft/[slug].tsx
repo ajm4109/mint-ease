@@ -1,6 +1,14 @@
 import { useAddress, useDisconnect, useMetamask } from '@thirdweb-dev/react'
+import { GetServerSideProps } from 'next'
+import Link from 'next/link'
+import { sanityClient, urlFor } from '../../sanity'
+import { Collection } from '../../typings'
 
-const Slug = () => {
+interface Props {
+  collection: Collection
+}
+
+const Slug = ({ collection }: Props) => {
   const connectWithMetamask = useMetamask()
   const address = useAddress()
   const disconnect = useDisconnect()
@@ -13,16 +21,15 @@ const Slug = () => {
           <picture className="mb-3 rounded-lg bg-gradient-to-br from-red-500 to-cyan-700 object-cover p-2 shadow-md shadow-[#bead6f]">
             <img
               className="w-40 rounded-lg lg:h-96 lg:w-72"
-              src="/images/goldape.jpg"
-              alt="war-ape"
+              src={urlFor(collection.collectionImage).url()}
+              alt="ape"
             />
           </picture>
           <div className="w-1/2 space-y-4 text-center md:w-1/3">
-            <h1 className="text text-4xl font-bold text-white">War Apes</h1>
-            <p className="pb-4 text-white">
-              War Hammer 10K plus The Apes Collection... or whatever... Just...
-              Apes, for temperary visulization. Fuck.
-            </p>
+            <h1 className="text text-4xl font-bold text-white">
+              {collection.collectionName}
+            </h1>
+            <p className="pb-4 text-white">{collection.description}</p>
           </div>
         </aside>
       </section>
@@ -59,12 +66,12 @@ const Slug = () => {
           <picture className="flex w-full items-center justify-center">
             <img
               className="w-80 object-cover pb-10 lg:aspect-video lg:w-5/6"
-              src="https://links.papareact.com/bdy"
+              src={urlFor(collection.mainImage).url()}
               alt="mint ease monkies"
             />
           </picture>
           <h1 className="pb-5 text-3xl font-bold lg:text-5xl lg:font-extrabold">
-            Mint-Ease War Ape NFT Collection
+            Mint-Ease {collection.title} NFT Collection
           </h1>
         </div>
         <button
@@ -73,9 +80,59 @@ const Slug = () => {
         >
           Mint NFT
         </button>
+        <Link href="/">
+          <a className="mt-5">
+            <p className="mx-auto w-fit underline hover:scale-105 hover:cursor-pointer hover:text-blue-700">
+              Back To Home
+            </p>
+          </a>
+        </Link>
       </section>
     </div>
   )
 }
 
 export default Slug
+
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const query = `*[_type == "collection" && slug.current == $slug][0]{
+  _id,
+  title,
+  address,
+  description,
+  collectionName,
+  mainImage {
+    asset
+  },
+  collectionImage {
+    asset
+  },
+  slug {
+    current
+  },
+  creator-> {
+    _id,
+    name,
+    address,
+    slug {
+      current
+    },
+  },
+}`
+
+  const collection = await sanityClient.fetch(query, {
+    slug: params?.slug,
+  })
+
+  if (!collection) {
+    return {
+      notFound: true,
+    }
+  }
+
+  return {
+    props: {
+      collection,
+    },
+  }
+}
