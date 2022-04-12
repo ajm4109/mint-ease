@@ -1,6 +1,13 @@
-import { useAddress, useDisconnect, useMetamask } from '@thirdweb-dev/react'
+import {
+  useAddress,
+  useDisconnect,
+  useMetamask,
+  useNFTDrop,
+} from '@thirdweb-dev/react'
+import { BigNumber } from 'ethers'
 import { GetServerSideProps } from 'next'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { sanityClient, urlFor } from '../../sanity'
 import { Collection } from '../../typings'
 
@@ -9,9 +16,77 @@ interface Props {
 }
 
 const Slug = ({ collection }: Props) => {
+  //metamask auth
   const connectWithMetamask = useMetamask()
   const address = useAddress()
   const disconnect = useDisconnect()
+  // ---
+
+  //states
+  const [claimedSupply, setClaimedSupply] = useState<number>(0)
+  const [totalSupply, setTotalSupply] = useState<BigNumber>()
+  const [loading, setLoading] = useState(true)
+  const [priceEth, setPriceEth] = useState<string>()
+  const [nftAddress, setNftAddress] = useState<string>(collection.address)
+  // ---
+
+  const nftDrop = useNFTDrop(collection.address)
+
+  useEffect(() => {
+    if (!nftDrop) return
+
+    const fetchPrice = async () => {
+      const claimConditions = await nftDrop.claimConditions.getAll()
+      setPriceEth(claimConditions?.[0].currencyMetadata.displayValue)
+    }
+
+    fetchPrice()
+  }, [nftDrop])
+
+  useEffect(() => {
+    if (!nftDrop) return
+
+    const fetchNFTDropData = async () => {
+      setLoading(true)
+
+      const claimed = await nftDrop.getAllClaimed()
+      const total = await nftDrop.getTotalCount()
+
+      setClaimedSupply(claimed.length)
+      setTotalSupply(total)
+
+      setLoading(false)
+    }
+
+    fetchNFTDropData()
+  }, [nftDrop])
+
+  setTimeout(() => {
+    if (loading === false) return
+
+    setLoading(false)
+    setNftAddress('na')
+  }, 10000)
+
+  const mintNft = () => {
+    if (!nftDrop || !address) return
+
+    const quantity = 1
+
+    nftDrop
+      ?.claimTo(address, quantity)
+      .then(async (tx) => {
+        const receipt = tx[0].receipt
+        const claimedtoken = tx[0].id
+        const claimedNFT = await tx[0].data()
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-10">
@@ -20,9 +95,9 @@ const Slug = ({ collection }: Props) => {
         <aside className="flex h-full flex-1 flex-col items-center justify-center bg-gradient-to-br from-cyan-800 to-red-400 p-3 lg:min-h-screen">
           <picture className="mb-3 rounded-lg bg-gradient-to-br from-red-500 to-cyan-700 object-cover p-2 shadow-md shadow-[#bead6f]">
             <img
-              className="w-40 rounded-lg lg:h-96 lg:w-72"
+              className="w-40 rounded-lg object-cover lg:h-96 lg:w-72"
               src={urlFor(collection.collectionImage).url()}
-              alt="ape"
+              alt={collection.collectionName}
             />
           </picture>
           <div className="w-1/2 space-y-4 text-center md:w-1/3">
@@ -70,15 +145,50 @@ const Slug = ({ collection }: Props) => {
               alt="mint ease monkies"
             />
           </picture>
-          <h1 className="pb-5 text-3xl font-bold lg:text-5xl lg:font-extrabold">
+          <h1 className=" mb-3 text-3xl font-bold lg:text-5xl lg:font-extrabold">
             Mint-Ease {collection.title} NFT Collection
           </h1>
         </div>
+
+        {loading ? (
+          <div className="mx-auto w-fit">
+            <p className="animate-ping text-sm font-bold text-green-500">
+              Loading...
+            </p>
+          </div>
+        ) : nftAddress === 'na' ? (
+          <span className="text-xs text-white">
+            This Collection Isn't Created Yet
+          </span>
+        ) : (
+          <div className="mx-auto w-fit">
+            <p className="text-sm font-bold text-green-500">
+              {claimedSupply} / {totalSupply?.toString()} NFTs claimed
+            </p>
+          </div>
+        )}
+
         <button
-          disabled={!address}
-          className="w-full rounded border bg-purple-900 px-5 py-2 text-xl font-bold text-white shadow-xl disabled:bg-gray-400"
+          onClick={mintNft}
+          disabled={
+            !address ||
+            loading ||
+            claimedSupply === totalSupply?.toNumber() ||
+            nftAddress === 'na'
+          }
+          className="mt-7 w-full rounded border bg-purple-900 px-5 py-2 text-xl font-bold text-white shadow-xl disabled:bg-gray-400"
         >
-          Mint NFT
+          {loading ? (
+            <>Loading...</>
+          ) : nftAddress === 'na' ? (
+            <>Collection coming soon...</>
+          ) : claimedSupply === totalSupply?.toNumber() ? (
+            <>SOLD OUT</>
+          ) : !address ? (
+            <>Sign In To Mint</>
+          ) : (
+            <span className="font-bold">Mint NFT ({priceEth})</span>
+          )}
         </button>
         <Link href="/">
           <a className="mt-5">

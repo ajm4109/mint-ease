@@ -20,8 +20,8 @@ const Home = ({ collections }: Props) => {
       <div className="flex items-center justify-center p-7 text-2xl">
         <h1>
           Welcome to the{' '}
-          <span className="text-3xl font-bold underline">Aj Prime</span> NFT
-          Drop Page
+          <span className="text-3xl font-bold underline">Aj Prime</span>
+          NFT Drop Page
         </h1>
       </div>
 
