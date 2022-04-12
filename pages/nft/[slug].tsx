@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { sanityClient, urlFor } from '../../sanity'
 import { Collection } from '../../typings'
+import IdleTimer from 'react-idle-timer'
 
 interface Props {
   collection: Collection
@@ -60,13 +61,6 @@ const Slug = ({ collection }: Props) => {
 
     fetchNFTDropData()
   }, [nftDrop])
-
-  setTimeout(() => {
-    if (loading === false) return
-
-    setLoading(false)
-    setNftAddress('na')
-  }, 10000)
 
   const mintNft = () => {
     if (!nftDrop || !address) return
