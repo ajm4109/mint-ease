@@ -10,7 +10,6 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { sanityClient, urlFor } from '../../sanity'
 import { Collection } from '../../typings'
-import IdleTimer from 'react-idle-timer'
 
 interface Props {
   collection: Collection
@@ -32,6 +31,8 @@ const Slug = ({ collection }: Props) => {
   // ---
 
   const nftDrop = useNFTDrop(collection.address)
+
+  // Learn to properly time out Loading on collections with no collections address
 
   useEffect(() => {
     if (!nftDrop) return
@@ -61,6 +62,13 @@ const Slug = ({ collection }: Props) => {
 
     fetchNFTDropData()
   }, [nftDrop])
+
+  setTimeout(() => {
+    if (loading == true && nftAddress == undefined) {
+      setLoading(false)
+      setNftAddress('na')
+    }
+  }, 1000 * 10)
 
   const mintNft = () => {
     if (!nftDrop || !address) return
