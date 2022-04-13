@@ -193,8 +193,8 @@ const Slug = ({ collection }: Props) => {
           )}
         </button>
         <Link href="/">
-          <a className="mt-5">
-            <p className="mx-auto w-fit underline hover:scale-105 hover:cursor-pointer hover:text-blue-700">
+          <a className="mx-auto mt-5 w-fit">
+            <p className="underline hover:scale-105 hover:cursor-pointer hover:text-blue-700">
               Back To Home
             </p>
           </a>
