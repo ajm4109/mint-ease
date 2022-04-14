@@ -171,14 +171,16 @@ const Slug = ({ collection }: Props) => {
         )}
 
         <button
-          onClick={mintNft}
+          onClick={() => {
+            !address ? connectWithMetamask() : mintNft()
+          }}
           disabled={
-            !address ||
             loading ||
             claimedSupply === totalSupply?.toNumber() ||
             nftAddress === 'na'
           }
-          className="mt-7 w-full rounded border bg-purple-900 px-5 py-2 text-xl font-bold text-white shadow-xl disabled:bg-gray-400"
+          className={`mt-7 w-full rounded border bg-purple-900 px-5 py-2 text-xl font-bold text-white shadow-xl disabled:bg-gray-400 
+            ${!address ? 'bg-lime-500' : 'bg-purple-900'}`}
         >
           {loading ? (
             <>Loading...</>
